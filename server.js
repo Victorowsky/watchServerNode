@@ -6,7 +6,10 @@ const port = process.env.PORT || 3001;
 let currentVideoLinkServer;
 let isPlayingServer;
 let videoQueueServer = [];
+let onlineUsers = 0;
+
 io.on("connection", (client) => {
+  io.emit("onlineUsers", ++onlineUsers);
   client.on("handleLogin", ({ password }) => {
     if (password === `,./`) {
       client.emit("handleLoginAnswer", { success: true });
@@ -37,6 +40,10 @@ io.on("connection", (client) => {
       isPlayingServer,
       videoQueueServer,
     });
+  });
+
+  client.on("disconnect", () => {
+    io.emit("onlineUsers", --onlineUsers);
   });
 });
 
