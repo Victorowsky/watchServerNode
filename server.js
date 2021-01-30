@@ -7,9 +7,19 @@ let currentVideoLinkServer;
 let isPlayingServer;
 let videoQueueServer = [];
 io.on("connection", (client) => {
+  client.on("handleLogin", ({ password }) => {
+    if (password === `,./`) {
+      client.emit("handleLoginAnswer", { success: true });
+    }
+  });
+
   client.on("currentSeconds", (seconds) => {
     currentVideoTime = seconds;
     io.emit("currentSecondsAnswer", seconds);
+  });
+  client.on("videoQueue", (videoQueue) => {
+    videoQueueServer.push(videoQueue);
+    io.emit("videoQueueAnswer", { videoQueueServer });
   });
 
   client.on("videoChange", (currentVideoLink) => {
@@ -25,6 +35,7 @@ io.on("connection", (client) => {
     client.emit("getAllDataAnswer", {
       currentVideoLinkServer,
       isPlayingServer,
+      videoQueueServer,
     });
   });
 });
