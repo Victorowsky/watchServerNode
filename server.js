@@ -7,12 +7,21 @@ let currentVideoLinkServer;
 let isPlayingServer;
 let videoQueueServer = [];
 let onlineUsers = 0;
+let currentAdmin = null;
 
 io.on("connection", (client) => {
   io.emit("onlineUsers", ++onlineUsers);
   client.on("handleLogin", ({ password }) => {
     if (password === `,./`) {
-      client.emit("handleLoginAnswer", { success: true });
+      if (currentAdmin === null) {
+        client.emit("handleLoginAnswer", { success: true });
+        currentAdmin = client.id;
+      } else {
+        client.emit("handleLoginAnswer", {
+          success: false,
+          message: "There is already admin",
+        });
+      }
     }
   });
 
@@ -43,6 +52,9 @@ io.on("connection", (client) => {
   });
 
   client.on("disconnect", () => {
+    if (client.id === currentAdmin) {
+      currentAdmin = null;
+    }
     io.emit("onlineUsers", --onlineUsers);
   });
 });
