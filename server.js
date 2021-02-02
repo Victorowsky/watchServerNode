@@ -5,7 +5,6 @@ const port = process.env.PORT || 3001;
 
 let currentVideoLinkServer;
 let isPlayingServer;
-let videoQueueServer = [];
 let onlineUsers = 0;
 let currentAdmin = null;
 
@@ -25,13 +24,8 @@ io.on("connection", (client) => {
     }
   });
 
-  client.on("currentSeconds", (seconds) => {
-    currentVideoTime = seconds;
-    io.emit("currentSecondsAnswer", seconds);
-  });
-  client.on("videoQueue", (videoQueue) => {
-    videoQueueServer.push(videoQueue);
-    io.emit("videoQueueAnswer", { videoQueueServer });
+  client.on("adminData", ({ currentSeconds }) => {
+    io.emit("currentSecondsAnswer", currentSeconds);
   });
 
   client.on("videoChange", (currentVideoLink) => {
@@ -47,8 +41,11 @@ io.on("connection", (client) => {
     client.emit("getAllDataAnswer", {
       currentVideoLinkServer,
       isPlayingServer,
-      videoQueueServer,
     });
+  });
+
+  client.on("adminLeave", () => {
+    currentAdmin = null;
   });
 
   client.on("disconnect", () => {
