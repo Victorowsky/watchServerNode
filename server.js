@@ -7,6 +7,7 @@ let currentVideoLinkServer;
 let isPlayingServer;
 let onlineUsers = 0;
 let currentAdmin = null;
+let twitchStreamerChatServer = null;
 
 io.on("connection", (client) => {
   io.emit("onlineUsers", ++onlineUsers);
@@ -25,7 +26,8 @@ io.on("connection", (client) => {
   });
 
   client.on("adminData", ({ currentSeconds }) => {
-    io.emit("currentSecondsAnswer", currentSeconds);
+    // io.emit("currentSecondsAnswer", currentSeconds);
+    io.emit("adminDataAnswer", { currentSeconds });
   });
 
   client.on("videoChange", (currentVideoLink) => {
@@ -41,11 +43,17 @@ io.on("connection", (client) => {
     client.emit("getAllDataAnswer", {
       currentVideoLinkServer,
       isPlayingServer,
+      twitchStreamerChatServer,
     });
   });
 
   client.on("adminLeave", () => {
     currentAdmin = null;
+  });
+
+  client.on("changeStreamersChat", (twitchStreamerChat) => {
+    twitchStreamerChatServer = twitchStreamerChat;
+    io.emit("changeStreamersChatAnswer", twitchStreamerChat);
   });
 
   client.on("disconnect", () => {
