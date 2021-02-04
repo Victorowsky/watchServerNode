@@ -7,7 +7,7 @@ let currentVideoLinkServer;
 let isPlayingServer;
 let onlineUsers = 0;
 let currentAdmin = null;
-let twitchStreamerChatServer = null;
+let twitchStreamerChatServer = "victorowsky_";
 
 io.on("connection", (client) => {
   io.emit("onlineUsers", ++onlineUsers);
@@ -26,7 +26,6 @@ io.on("connection", (client) => {
   });
 
   client.on("adminData", ({ currentSeconds }) => {
-    // io.emit("currentSecondsAnswer", currentSeconds);
     io.emit("adminDataAnswer", { currentSeconds });
   });
 
