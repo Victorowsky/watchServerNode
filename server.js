@@ -65,42 +65,36 @@ db.once("open", function () {
 
 const RoomSchema = require("./Schemas/RoomSchema");
 
-let currentVideoLinkServer;
-let isPlayingServer;
-let onlineUsers = 0;
-let currentAdmin = null;
-let twitchStreamerChatServer = "victorowsky_";
+// let currentVideoLinkServer;
+// let isPlayingServer;
+// let onlineUsers = 0;
+// let currentAdmin = null;
+// let twitchStreamerChatServer = "victorowsky_";
 
-// io.use(function (socket, next) {
-//   sessionMiddleware(socket.request, socket.request.res || {}, next);
-//   next();
-// });
-// io.use(
-//   sharedsession(session, {
-//     autoSave: true,
-//   })
-// );
+// ON START APP RESTART ALL ADMINS
+RoomSchema.updateMany({}, { admin: null }, (err, docs) => {
+  if (err) return console.log(`CLEAR ALL ADMINS ON START ERROR : ${err}`);
+
+  console.log("CLEARED ALL ADMINS");
+});
 
 io.on("connection", (client) => {
   let isAdminInRoom = "";
 
-  // console.log(client.handshake.session);
-  // console.log(client.handshake.session);
-
   io.emit("onlineUsers", ++onlineUsers);
-  client.on("handleLogin", ({ password }) => {
-    if (password === `,./`) {
-      if (currentAdmin === null) {
-        client.emit("handleLoginAnswer", { success: true });
-        currentAdmin = client.id;
-      } else {
-        client.emit("handleLoginAnswer", {
-          success: false,
-          message: "There is already admin",
-        });
-      }
-    }
-  });
+  // client.on("handleLogin", ({ password }) => {
+  //   if (password === `,./`) {
+  //     if (currentAdmin === null) {
+  //       client.emit("handleLoginAnswer", { success: true });
+  //       currentAdmin = client.id;
+  //     } else {
+  //       client.emit("handleLoginAnswer", {
+  //         success: false,
+  //         message: "There is already admin",
+  //       });
+  //     }
+  //   }
+  // });
 
   client.on("joinRoom", ({ currentRoom }) => {
     client.join(currentRoom);
@@ -182,7 +176,7 @@ io.on("connection", (client) => {
       if (docs.admin) {
         client.emit("adminRequestAnswer", {
           success: false,
-          message: "There is already admin",
+          message: "There is already an admin",
         });
       } else {
         RoomSchema.findOneAndUpdate(
@@ -192,10 +186,9 @@ io.on("connection", (client) => {
           (err, docs) => {
             if (err)
               return console.log(`ADMIN REQUEST UPDATE ADMIN ERROR :${err}`);
-            // console.log(docs);
             client.emit("adminRequestAnswer", {
               success: true,
-              message: "Now you are admin",
+              message: "Now you are an admin",
             });
             isAdminInRoom = currentRoom;
           }
