@@ -65,14 +65,10 @@ db.once("open", function () {
 
 const RoomSchema = require("./Schemas/RoomSchema");
 
-// let currentVideoLinkServer;
-// let isPlayingServer;
 let onlineUsers = 0;
-// let currentAdmin = null;
-// let twitchStreamerChatServer = "victorowsky_";
 
 // ON START APP RESTART ALL ADMINS
-RoomSchema.updateMany({}, { admin: null }, (err, docs) => {
+RoomSchema.updateMany({}, { admin: null, onlineUsers: 0 }, (err, docs) => {
   if (err) return console.log(`CLEAR ALL ADMINS ON START ERROR : ${err}`);
 
   console.log("CLEARED ALL ADMINS");
@@ -82,48 +78,55 @@ io.on("connection", (client) => {
   let isAdminInRoom = "";
 
   io.emit("onlineUsers", ++onlineUsers);
-  // client.on("handleLogin", ({ password }) => {
-  //   if (password === `,./`) {
-  //     if (currentAdmin === null) {
-  //       client.emit("handleLoginAnswer", { success: true });
-  //       currentAdmin = client.id;
-  //     } else {
-  //       client.emit("handleLoginAnswer", {
-  //         success: false,
-  //         message: "There is already admin",
-  //       });
-  //     }
-  //   }
-  // });
 
   client.on("joinRoom", ({ currentRoom }) => {
     client.join(currentRoom);
     // console.log(`CLIENT JOINED TO ${currentRoom}`);
-    RoomSchema.findOne({ name: currentRoom }, (err, docs) => {
-      if (err) {
-        return console.log(`CHECK IS ROOM EXIST ERROR ${err}`);
-      }
-      // IF THERE IS NO ROOM CREATE
-      if (!docs) {
-        const newRoom = new RoomSchema({
-          name: currentRoom,
-        });
-        newRoom.save((err, docs) => {
-          if (err) return console.log(`SAVE NEW ROOM ERROR ${err}`);
+    RoomSchema.findOneAndUpdate(
+      { name: currentRoom },
+      { $inc: { onlineUsers: 1 } },
+      { new: true },
+      (err, docs) => {
+        if (err) {
+          return console.log(`CHECK IS ROOM EXIST ERROR ${err}`);
+        }
+        // IF THERE IS NO ROOM CREATE
+        if (!docs) {
+          const newRoom = new RoomSchema({
+            name: currentRoom,
+            onlineUsers: 1,
+          });
+          newRoom.save((err, docs) => {
+            if (err) return console.log(`SAVE NEW ROOM ERROR ${err}`);
+            client.emit("joinRoomAnswer", { docs });
+          });
+        } else {
+          // IF EXIST JUST SEND DATA
           client.emit("joinRoomAnswer", { docs });
-        });
-      } else {
-        // IF EXIST JUST SEND DATA
-
-        client.emit("joinRoomAnswer", { docs });
+          const onlineUsers = docs.onlineUsers;
+          io.to(currentRoom).emit("onlineUsersAnswer", { onlineUsers });
+        }
       }
-    });
+    );
 
     // io.to(twitchStreamer).emit("roomData", { usersOnline: "+" });
   });
 
   client.on("leaveRoom", ({ currentRoom }) => {
-    console.log(`CLIENT LEFT ${currentRoom}`);
+    // console.log(`CLIENT LEFT ${currentRoom}`);
+
+    RoomSchema.findOneAndUpdate(
+      { name: currentRoom },
+      { $inc: { onlineUsers: -1 } },
+      { new: true },
+      (err, docs) => {
+        if (err) {
+          return console.log(`LEAVE ROOM DECREMNT USERS ONLINE:  ${err}`);
+        }
+        const onlineUsers = docs.onlineUsers || 1;
+        io.to(currentRoom).emit("onlineUsersAnswer", { onlineUsers });
+      }
+    );
     client.leave(currentRoom);
     if (isAdminInRoom) {
       RoomSchema.findOneAndUpdate(
