@@ -67,7 +67,7 @@ const RoomSchema = require("./Schemas/RoomSchema");
 
 // let currentVideoLinkServer;
 // let isPlayingServer;
-// let onlineUsers = 0;
+let onlineUsers = 0;
 // let currentAdmin = null;
 // let twitchStreamerChatServer = "victorowsky_";
 
