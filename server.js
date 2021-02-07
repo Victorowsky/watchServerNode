@@ -2,20 +2,7 @@ const app = require("express")();
 const http = require("http").Server(app);
 const io = require("socket.io")(http, { cors: true, withCredentials: true });
 const port = process.env.PORT || 3001;
-// const bodyParser = require("body-parser");
-// const passport = require("passport");
 const mongoose = require("mongoose");
-// const cookieParser = require("cookie-parser");
-// const makeStore = require("express-session");
-// const store = new makeStore.MemoryStore();
-// const session = require("express-session")({
-//   name: "twitch-session",
-//   secret: "my-secret",
-//   resave: true,
-//   saveUninitialized: true,
-//   store: store,
-// });
-// const sharedsession = require("express-socket.io-session");
 
 require("./passport-config");
 
@@ -29,39 +16,6 @@ db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", function () {
   console.log("DB CONNECTED");
 });
-
-// app.use(bodyParser.json());
-// app.use(cookieParser());
-// app.use(session);
-// app.use(passport.initialize());
-// app.use(passport.session());
-
-// app.get("/twitch", passport.authenticate("twitch"));
-// app.get(
-//   "/twitch/callback",
-//   passport.authenticate("twitch", { failureRedirect: "/failed" }),
-//   function (req, res) {
-//     // Successful authentication, redirect home.
-//     console.log(req.session);
-//     // res.json(req.session.passport);
-//     res.redirect("http://localhost:3000/");
-//   }
-// );
-
-// app.get("/failed", (req, res) => {
-//   res.send("failed");
-// });
-
-// app.get("/good", (req, res) => {
-//   res.redirect("http://localhost:3000/");
-// });
-
-// app.get("/logout", (req, res) => {
-//   // res.clearCookie("userid");
-//   req.session = null;
-//   req.logout();
-//   res.redirect("/");
-// });
 
 const RoomSchema = require("./Schemas/RoomSchema");
 
@@ -108,13 +62,9 @@ io.on("connection", (client) => {
         }
       }
     );
-
-    // io.to(twitchStreamer).emit("roomData", { usersOnline: "+" });
   });
 
   client.on("leaveRoom", ({ currentRoom }) => {
-    // console.log(`CLIENT LEFT ${currentRoom}`);
-
     RoomSchema.findOneAndUpdate(
       { name: currentRoom },
       { $inc: { onlineUsers: -1 } },
@@ -175,7 +125,6 @@ io.on("connection", (client) => {
     RoomSchema.findOne({ name: currentRoom }, (err, docs) => {
       if (err) return console.log(`ADMIN REQUEST ERROR :${err}`);
 
-      // console.log(docs);
       if (docs.admin) {
         client.emit("adminRequestAnswer", {
           success: false,
@@ -201,7 +150,6 @@ io.on("connection", (client) => {
   });
 
   client.on("adminLeave", () => {
-    // console.log(isAdminInRoom);
     if (isAdminInRoom) {
       RoomSchema.findOneAndUpdate(
         { name: isAdminInRoom },
@@ -216,11 +164,6 @@ io.on("connection", (client) => {
     }
   });
 
-  client.on("changeStreamersChat", (twitchStreamerChat) => {
-    twitchStreamerChatServer = twitchStreamerChat;
-    io.emit("changeStreamersChatAnswer", twitchStreamerChat);
-  });
-
   client.on("disconnect", () => {
     if (isAdminInRoom) {
       RoomSchema.findOneAndUpdate(
@@ -233,9 +176,6 @@ io.on("connection", (client) => {
         }
       );
     }
-    // if (client.id === currentAdmin) {
-    //   currentAdmin = null;
-    // }
     io.emit("onlineUsers", --onlineUsers);
   });
 });
