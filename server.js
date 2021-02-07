@@ -4,8 +4,6 @@ const io = require("socket.io")(http, { cors: true, withCredentials: true });
 const port = process.env.PORT || 3001;
 const mongoose = require("mongoose");
 
-require("./passport-config");
-
 mongoose.set("useFindAndModify", false);
 mongoose.connect(
   "mongodb+srv://admin2:JmHTrp09LkkiAIMm@cluster0.ktmcd.mongodb.net/WatchTogether?retryWrites=true&w=majority",
