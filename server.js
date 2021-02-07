@@ -6,8 +6,8 @@ const port = process.env.PORT || 3001;
 // const passport = require("passport");
 const mongoose = require("mongoose");
 // const cookieParser = require("cookie-parser");
-const makeStore = require("express-session");
-const store = new makeStore.MemoryStore();
+// const makeStore = require("express-session");
+// const store = new makeStore.MemoryStore();
 // const session = require("express-session")({
 //   name: "twitch-session",
 //   secret: "my-secret",
