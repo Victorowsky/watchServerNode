@@ -97,9 +97,11 @@ io.on("connection", (client) => {
   });
 
   client.on("videoChange", ({ currentVideoLink, currentRoom }) => {
+    const date = Date.now();
+
     RoomSchema.findOneAndUpdate(
       { name: currentRoom },
-      { currentVideoLink },
+      { currentVideoLink, createdAt: date },
       (err, docs) => {
         if (err) {
           return console.log(`ADMIN DATA ERROR: ${err}`);
