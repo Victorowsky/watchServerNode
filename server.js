@@ -142,6 +142,10 @@ io.on("connection", (client) => {
               success: true,
               message: "Now you are an admin",
             });
+            io.in(currentRoom).emit("adminAnswer", {
+              isAdminTaken: true,
+            });
+
             isAdminInRoom = currentRoom;
           }
         );
@@ -160,6 +164,7 @@ io.on("connection", (client) => {
           console.log(`Admin deleted in ${isAdminInRoom}`);
         }
       );
+      io.in(isAdminInRoom).emit("adminAnswer", { isAdminTaken: false });
       isAdminInRoom = "";
     }
   });
