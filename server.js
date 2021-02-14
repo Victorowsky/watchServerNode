@@ -17,8 +17,6 @@ db.once("open", function () {
 
 const RoomSchema = require("./Schemas/RoomSchema");
 
-let onlineUsers = 0;
-
 // ON START APP RESTART ALL ADMINS
 RoomSchema.updateMany({}, { admin: null, onlineUsers: 0 }, (err, docs) => {
   if (err) return console.log(`CLEAR ALL ADMINS ON START ERROR : ${err}`);
@@ -29,14 +27,13 @@ RoomSchema.updateMany({}, { admin: null, onlineUsers: 0 }, (err, docs) => {
 io.on("connection", (client) => {
   let isAdminInRoom = "";
 
-  io.emit("onlineUsers", ++onlineUsers);
-
   client.on("joinRoom", ({ currentRoom }) => {
     client.join(currentRoom);
+    const onlineUsersInRoom = io.sockets.adapter.rooms.get(currentRoom).size;
     // console.log(`CLIENT JOINED TO ${currentRoom}`);
     RoomSchema.findOneAndUpdate(
       { name: currentRoom },
-      { $inc: { onlineUsers: 1 } },
+      { onlineUsers: onlineUsersInRoom },
       { new: true },
       (err, docs) => {
         if (err) {
@@ -63,9 +60,17 @@ io.on("connection", (client) => {
   });
 
   client.on("leaveRoom", ({ currentRoom }) => {
+    let onlineUsersAfterLeft;
+    let onlineUsersInRoom;
+    if (io.sockets.adapter.rooms.get(currentRoom)) {
+      onlineUsersInRoom = io.sockets.adapter.rooms.get(currentRoom).size;
+      onlineUsersAfterLeft = onlineUsersInRoom - 1;
+    } else {
+      onlineUsersAfterLeft = 1;
+    }
     RoomSchema.findOneAndUpdate(
       { name: currentRoom },
-      { $inc: { onlineUsers: -1 } },
+      { onlineUsers: onlineUsersAfterLeft },
       { new: true },
       (err, docs) => {
         if (err) {
@@ -184,7 +189,6 @@ io.on("connection", (client) => {
         isAdminTaken: false,
       });
     }
-    io.emit("onlineUsers", --onlineUsers);
   });
 });
 
