@@ -180,6 +180,9 @@ io.on("connection", (client) => {
           console.log(`Admin deleted in ${isAdminInRoom}`);
         }
       );
+      io.in(isAdminInRoom).emit("adminAnswer", {
+        isAdminTaken: false,
+      });
     }
     io.emit("onlineUsers", --onlineUsers);
   });
