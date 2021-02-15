@@ -87,8 +87,10 @@ io.on("connection", (client) => {
         { admin: null },
         (err) => {
           if (err) return console.log(`ADMIN LEFT ERROR ${err}`);
-
-          console.log(`Admin deleted in ${isAdminInRoom}`);
+          console.log(`Admin deleted in ${isAdminInRoom} (leaveRoom)`);
+          io.in(currentRoom).emit("adminAnswer", {
+            isAdminTaken: false,
+          });
         }
       );
       isAdminInRoom = "";
@@ -166,11 +168,16 @@ io.on("connection", (client) => {
         (err) => {
           if (err) return console.log(`ADMIN LEFT ERROR ${err}`);
 
-          console.log(`Admin deleted in ${isAdminInRoom}`);
+          console.log(
+            `Admin deleted in ${isAdminInRoom} (adminLeave unloadEvent)`
+          );
         }
       );
-      io.in(isAdminInRoom).emit("adminAnswer", { isAdminTaken: false });
-      isAdminInRoom = "";
+      if (isAdminInRoom) {
+        console.log(isAdminInRoom);
+        io.in(isAdminInRoom).emit("adminAnswer", { isAdminTaken: false });
+        isAdminInRoom = "";
+      }
     }
   });
 
@@ -182,12 +189,12 @@ io.on("connection", (client) => {
         (err) => {
           if (err) return console.log(`ADMIN LEFT ERROR ${err}`);
 
-          console.log(`Admin deleted in ${isAdminInRoom}`);
+          console.log(`Admin deleted in ${isAdminInRoom} (disconnect)`);
+          io.in(isAdminInRoom).emit("adminAnswer", {
+            isAdminTaken: false,
+          });
         }
       );
-      io.in(isAdminInRoom).emit("adminAnswer", {
-        isAdminTaken: false,
-      });
     }
   });
 });
