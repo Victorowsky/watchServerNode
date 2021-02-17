@@ -97,9 +97,10 @@ io.on("connection", (client) => {
     }
   });
 
-  client.on("adminData", ({ currentSeconds, currentRoom }) => {
+  client.on("adminData", ({ currentSeconds, currentRoom, videoQueue }) => {
     io.to(currentRoom).emit("adminDataAnswer", {
       currentSeconds,
+      videoQueue,
     });
   });
 
@@ -160,6 +161,9 @@ io.on("connection", (client) => {
     });
   });
 
+  client.on("adminQueueUpdate", ({ videoQueue, currentRoom }) => {
+    io.in(currentRoom).emit("adminQueueUpdateAnswer", { videoQueue });
+  });
   client.on("adminLeave", () => {
     if (isAdminInRoom) {
       RoomSchema.findOneAndUpdate(
