@@ -1,8 +1,14 @@
-const app = require("express")();
+const express = require("express");
+const app = express();
 const http = require("http").Server(app);
 const io = require("socket.io")(http, { cors: true, withCredentials: true });
 const port = process.env.PORT || 3001;
 const mongoose = require("mongoose");
+const session = require("express-session");
+const cors = require("cors");
+const passport = require("passport");
+const path = require("path");
+require("./passport.js");
 
 mongoose.set("useFindAndModify", false);
 mongoose.connect(
@@ -13,6 +19,66 @@ const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", function () {
   console.log("DB CONNECTED");
+});
+
+app.use(express.static("app/build"));
+
+app.use(cors(true));
+app.set("trust proxy", 1); // trust first proxy
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: true,
+    saveUninitialized: true,
+    cookie: { secure: false },
+  })
+);
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "build/index.html"));
+});
+app.get("/session", (req, res) => {
+  res.json({ session: req.sessionID });
+});
+
+app.get("/getProfile", (req, res) => {
+  if (req.session.passport) {
+    res.json({ profile: req.session.passport.user });
+  } else {
+    res.json({ profile: null });
+  }
+});
+
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+// const cookieSession = require("cookie-session");
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+// app.use(cookieSession({ secret: "somesecrettokenhere" }));
+app.use(passport.initialize());
+app.use(passport.session());
+passport.serializeUser(function (user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function (user, done) {
+  done(null, user);
+});
+
+app.get("/auth/twitch", passport.authenticate("twitch"));
+app.get(
+  "/auth/twitch/callback",
+  passport.authenticate("twitch", { failureRedirect: "/" }),
+  function (req, res) {
+    // Successful authentication, redirect home.
+    res.redirect("/");
+  }
+);
+
+app.get("/twitch/logout", function (req, res) {
+  req.logout();
+  res.redirect("/");
 });
 
 const RoomSchema = require("./Schemas/RoomSchema");
@@ -129,6 +195,8 @@ io.on("connection", (client) => {
     isPlayingServer = isPlaying;
   });
 
+  client.on("adminFromTwitchJoined", ({ currentRoom }) => {});
+
   client.on("adminRequest", ({ currentRoom }) => {
     RoomSchema.findOne({ name: currentRoom }, (err, docs) => {
       if (err) return console.log(`ADMIN REQUEST ERROR :${err}`);
@@ -162,6 +230,7 @@ io.on("connection", (client) => {
   });
 
   client.on("adminQueueUpdate", ({ videoQueue, currentRoom }) => {
+    console.log(videoQueue, currentRoom);
     io.in(currentRoom).emit("adminQueueUpdateAnswer", { videoQueue });
   });
   client.on("adminLeave", () => {

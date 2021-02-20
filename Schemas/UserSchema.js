@@ -5,7 +5,8 @@ const { Schema } = mongoose;
 
 const UserSchema = new Schema({
   twitchId: { type: String },
-  login: { type: String, required: true },
+  login: { type: String },
+  image: { type: String },
 });
 
 UserSchema.plugin(findOrCreate);
