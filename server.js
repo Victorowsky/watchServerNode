@@ -51,11 +51,9 @@ app.get("/getProfile", (req, res) => {
 
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-// const cookieSession = require("cookie-session");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-// app.use(cookieSession({ secret: "somesecrettokenhere" }));
 app.use(passport.initialize());
 app.use(passport.session());
 passport.serializeUser(function (user, done) {
