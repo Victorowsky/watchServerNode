@@ -9,7 +9,8 @@ passport.use(
     {
       clientID: process.env.TWITCH_CLIENT_ID,
       clientSecret: process.env.TWITCH_CLIENT_SECRET,
-      callbackURL: "http://localhost:3001/auth/twitch/callback",
+      callbackURL:
+        "https://boiling-bastion-80662.herokuapp.com/auth/twitch/callback",
       scope: "user_read",
     },
     function (accessToken, refreshToken, profile, done) {
