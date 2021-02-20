@@ -21,7 +21,7 @@ db.once("open", function () {
   console.log("DB CONNECTED");
 });
 
-app.use(express.static("app/build"));
+app.use(express.static("build"));
 
 app.use(cors(true));
 app.set("trust proxy", 1); // trust first proxy
