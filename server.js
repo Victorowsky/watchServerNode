@@ -69,8 +69,13 @@ app.get(
   "/auth/twitch/callback",
   passport.authenticate("twitch", { failureRedirect: "/" }),
   function (req, res) {
+    const username = req.session?.passport?.user?.login;
     // Successful authentication, redirect home.
-    res.redirect("/");
+    if (username) {
+      res.redirect(`/#/${username}`);
+    } else {
+      res.redirect(`/#/`);
+    }
   }
 );
 
