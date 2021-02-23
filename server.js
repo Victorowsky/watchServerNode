@@ -48,9 +48,6 @@ app.get("/:channel", (req, res) => {
   const { channel } = req.params;
   res.redirect(`/#/${channel}`);
 });
-app.use(function (req, res) {
-  res.redirect("/");
-});
 
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
@@ -85,6 +82,10 @@ app.get(
 app.get("/twitch/logout", function (req, res) {
   req.session = null;
   req.logout();
+  res.redirect("/");
+});
+
+app.get("*", (req, res) => {
   res.redirect("/");
 });
 
