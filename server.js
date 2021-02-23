@@ -48,6 +48,9 @@ app.get("/:channel", (req, res) => {
   const { channel } = req.params;
   res.redirect(`/#/${channel}`);
 });
+app.use(function (req, res) {
+  res.redirect("/");
+});
 
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
