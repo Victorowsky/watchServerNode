@@ -83,6 +83,7 @@ app.get(
 );
 
 app.get("/twitch/logout", function (req, res) {
+  req.session = null;
   req.logout();
   res.redirect("/");
 });
