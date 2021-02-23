@@ -37,16 +37,16 @@ app.use(
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "build/index.html"));
 });
-app.get("/session", (req, res) => {
-  res.json({ session: req.sessionID });
-});
-
 app.get("/getProfile", (req, res) => {
   if (req.session.passport) {
     res.json({ profile: req.session.passport.user });
   } else {
     res.json({ profile: null });
   }
+});
+app.get("/:channel", (req, res) => {
+  const { channel } = req.params;
+  res.redirect(`/#/${channel}`);
 });
 
 const bodyParser = require("body-parser");
