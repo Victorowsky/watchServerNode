@@ -155,7 +155,6 @@ io.on("connection", (client) => {
 			}
 		);
 		client.leave(currentRoom);
-
 	});
 
 	client.on("adminData", ({ currentSeconds, currentRoom, videoQueue }) => {
@@ -194,10 +193,7 @@ io.on("connection", (client) => {
 		io.in(currentRoom).emit("adminQueueUpdateAnswer", { videoQueue });
 	});
 
-
-	client.on("disconnect", () => {
-
-	});
+	client.on("disconnect", () => {});
 });
 
 http.listen(port, () => {
