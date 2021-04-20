@@ -154,8 +154,10 @@ io.on("connection", (client) => {
 	client.on("disconnect", () => {
 		if (currentRoomSocket) {
 			let onlineUsers = io.sockets.adapter.rooms.get(currentRoomSocket);
-			onlineUsers = onlineUsers.size;
-			io.to(currentRoomSocket).emit("onlineUsersAnswer", { onlineUsers });
+			if (onlineUsers.size) {
+				onlineUsers = onlineUsers.size;
+				io.to(currentRoomSocket).emit("onlineUsersAnswer", { onlineUsers });
+			}
 		}
 	});
 });
