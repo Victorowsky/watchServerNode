@@ -99,62 +99,21 @@ RoomSchema.updateMany({}, { admin: null, onlineUsers: 0 }, (err, docs) => {
 });
 
 io.on("connection", (client) => {
-	let isAdminInRoom = "";
+	let currentRoomSocket = null;
 
 	client.on("joinRoom", ({ currentRoom }) => {
+		currentRoomSocket = currentRoom;
 		client.join(currentRoom);
-		const onlineUsersInRoom = io.sockets.adapter.rooms.get(currentRoom).size;
-		// console.log(`CLIENT JOINED TO ${currentRoom}`);
-		RoomSchema.findOneAndUpdate(
-			{ name: currentRoom },
-			{ onlineUsers: onlineUsersInRoom },
-			{ new: true },
-			(err, docs) => {
-				if (err) {
-					return console.log(`CHECK IS ROOM EXIST ERROR ${err}`);
-				}
-				// IF THERE IS NO ROOM CREATE
-				if (!docs) {
-					const newRoom = new RoomSchema({
-						name: currentRoom,
-						onlineUsers: 1,
-					});
-					newRoom.save((err, docs) => {
-						if (err) return console.log(`SAVE NEW ROOM ERROR ${err}`);
-						client.emit("joinRoomAnswer", { docs });
-					});
-				} else {
-					// IF EXIST JUST SEND DATA
-					client.emit("joinRoomAnswer", { docs });
-					const onlineUsers = docs.onlineUsers;
-					io.to(currentRoom).emit("onlineUsersAnswer", { onlineUsers });
-				}
-			}
-		);
+		let onlineUsers = io.sockets.adapter.rooms.get(currentRoom) || 1;
+		onlineUsers = onlineUsers.size;
+		io.to(currentRoom).emit("onlineUsersAnswer", { onlineUsers });
 	});
 
 	client.on("leaveRoom", ({ currentRoom }) => {
-		let onlineUsersAfterLeft;
-		let onlineUsersInRoom;
-		if (io.sockets.adapter.rooms.get(currentRoom)) {
-			onlineUsersInRoom = io.sockets.adapter.rooms.get(currentRoom).size;
-			onlineUsersAfterLeft = onlineUsersInRoom - 1;
-		} else {
-			onlineUsersAfterLeft = 1;
-		}
-		RoomSchema.findOneAndUpdate(
-			{ name: currentRoom },
-			{ onlineUsers: onlineUsersAfterLeft },
-			{ new: true },
-			(err, docs) => {
-				if (err) {
-					return console.log(`LEAVE ROOM DECREMNT USERS ONLINE:  ${err}`);
-				}
-				const onlineUsers = docs.onlineUsers || 1;
-				io.to(currentRoom).emit("onlineUsersAnswer", { onlineUsers });
-			}
-		);
 		client.leave(currentRoom);
+		let onlineUsers = io.sockets.adapter.rooms.get(currentRoom) || 1;
+		onlineUsers = onlineUsers.size;
+		io.to(currentRoom).emit("onlineUsersAnswer", { onlineUsers });
 	});
 
 	client.on("adminData", ({ currentSeconds, currentRoom, videoQueue }) => {
@@ -189,11 +148,16 @@ io.on("connection", (client) => {
 	});
 
 	client.on("adminQueueUpdate", ({ videoQueue, currentRoom }) => {
-		console.log(videoQueue, currentRoom);
 		io.in(currentRoom).emit("adminQueueUpdateAnswer", { videoQueue });
 	});
 
-	client.on("disconnect", () => {});
+	client.on("disconnect", () => {
+		if (currentRoomSocket) {
+			let onlineUsers = io.sockets.adapter.rooms.get(currentRoomSocket);
+			onlineUsers = onlineUsers.size;
+			io.to(currentRoomSocket).emit("onlineUsersAnswer", { onlineUsers });
+		}
+	});
 });
 
 http.listen(port, () => {
