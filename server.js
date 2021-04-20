@@ -154,7 +154,7 @@ io.on("connection", (client) => {
 	client.on("disconnect", () => {
 		if (currentRoomSocket) {
 			let onlineUsers = io.sockets.adapter.rooms.get(currentRoomSocket);
-			if (onlineUsers.size) {
+			if (onlineUsers) {
 				onlineUsers = onlineUsers.size;
 				io.to(currentRoomSocket).emit("onlineUsersAnswer", { onlineUsers });
 			}
