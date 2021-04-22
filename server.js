@@ -107,6 +107,7 @@ io.on("connection", (client) => {
 			client.emit("joinRoomAnswer", { docs });
 		});
 		client.join(currentRoom);
+		currentRoomSocket = currentRoom; // NEED FOR DISCONNECT
 		let onlineUsers = io.sockets.adapter.rooms.get(currentRoom) || 1;
 		onlineUsers = onlineUsers.size;
 		io.to(currentRoom).emit("onlineUsersAnswer", { onlineUsers });
@@ -117,7 +118,6 @@ io.on("connection", (client) => {
 		let onlineUsers = io.sockets.adapter.rooms.get(currentRoom) || 1;
 		onlineUsers = onlineUsers.size;
 		io.to(currentRoom).emit("onlineUsersAnswer", { onlineUsers });
-		client.emit("onlineUsersAnswer", { onlineUsers });
 	});
 
 	client.on("adminData", ({ currentSeconds, currentRoom, videoQueue }) => {
