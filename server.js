@@ -140,6 +140,7 @@ io.on("connection", (client) => {
 			currentRoom,
 		});
 	});
+	// MONGODB?
 
 	client.on("isPlaying", ({ isPlaying, currentRoom }) => {
 		io.to(currentRoom).emit("isPlayingSocketAnswer", {
