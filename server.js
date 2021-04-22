@@ -106,7 +106,6 @@ io.on("connection", (client) => {
 			if (err) return console.log(`CREATE ROOM ERROR -> ${err}`);
 			client.emit("joinRoomAnswer", { docs });
 		});
-		currentRoomSocket = currentRoom;
 		client.join(currentRoom);
 		let onlineUsers = io.sockets.adapter.rooms.get(currentRoom) || 1;
 		onlineUsers = onlineUsers.size;
