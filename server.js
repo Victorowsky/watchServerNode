@@ -104,6 +104,7 @@ io.on("connection", (client) => {
 	client.on("joinRoom", ({ currentRoom }) => {
 		RoomSchema.findOrCreate({ name: currentRoom }, (err, docs) => {
 			if (err) return console.log(`CREATE ROOM ERROR -> ${err}`);
+			client.emit("joinRoomAnswer", { docs });
 		});
 		currentRoomSocket = currentRoom;
 		client.join(currentRoom);
