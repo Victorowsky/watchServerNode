@@ -92,7 +92,7 @@ app.get("*", (req, res) => {
 const RoomSchema = require("./Schemas/RoomSchema");
 
 // ON START APP RESTART ALL ADMINS
-RoomSchema.updateMany({}, { admin: null, onlineUsers: 0 }, (err, docs) => {
+RoomSchema.updateMany({}, { admin: null }, (err, docs) => {
 	if (err) return console.log(`CLEAR ALL ADMINS ON START ERROR : ${err}`);
 
 	console.log("CLEARED ALL ADMINS");
@@ -102,6 +102,9 @@ io.on("connection", (client) => {
 	let currentRoomSocket = null;
 
 	client.on("joinRoom", ({ currentRoom }) => {
+		RoomSchema.findOrCreate({ name: currentRoom }, (err, docs) => {
+			if (err) return console.log(`CREATE ROOM ERROR -> ${err}`);
+		});
 		currentRoomSocket = currentRoom;
 		client.join(currentRoom);
 		let onlineUsers = io.sockets.adapter.rooms.get(currentRoom) || 1;
@@ -140,7 +143,6 @@ io.on("connection", (client) => {
 			currentRoom,
 		});
 	});
-	// MONGODB?
 
 	client.on("isPlaying", ({ isPlaying, currentRoom }) => {
 		io.to(currentRoom).emit("isPlayingSocketAnswer", {
