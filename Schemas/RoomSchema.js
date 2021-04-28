@@ -6,6 +6,7 @@ const RoomSchema = new Schema({
 	name: { type: String, required: true, unique: true },
 	admin: { type: String },
 	currentVideoLink: String,
+	queue: Array,
 });
 RoomSchema.plugin(findOrCreate);
 

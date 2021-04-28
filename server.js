@@ -150,6 +150,13 @@ io.on("connection", (client) => {
 	});
 
 	client.on("adminQueueUpdate", ({ videoQueue, currentRoom }) => {
+		RoomSchema.findOneAndUpdate(
+			{ name: currentRoom },
+			{ queue: videoQueue },
+			(err, docs) => {
+				if (err) return console.log(`ADMIN QUEUE UPDATE ERROR => ${err}`);
+			}
+		);
 		io.in(currentRoom).emit("adminQueueUpdateAnswer", { videoQueue });
 	});
 
