@@ -24,7 +24,7 @@ db.once("open", function () {
 app.use(express.static("build"));
 
 app.use(cors(true));
-app.set("trust proxy", 1); // trust first proxy
+app.set("trust proxy", 1); // trust first proxyy
 app.use(
 	session({
 		secret: "keyboard cat",
