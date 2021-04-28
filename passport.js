@@ -4,15 +4,12 @@ const twitchStrategy = require("passport-twitch-strategy").Strategy;
 
 const UserSchema = require("./Schemas/UserSchema");
 
-const websiteURL = "https://video.legga.pl";
-// const websiteURL = "http://localhost:3001";
-
 passport.use(
 	new twitchStrategy(
 		{
 			clientID: process.env.TWITCH_CLIENT_ID,
 			clientSecret: process.env.TWITCH_CLIENT_SECRET,
-			callbackURL: `${websiteURL}/auth/twitch/callback`,
+			callbackURL: `/auth/twitch/callback`,
 			scope: "user_read",
 		},
 		function (accessToken, refreshToken, profile, done) {

@@ -108,15 +108,15 @@ io.on("connection", (client) => {
 		});
 		client.join(currentRoom);
 		currentRoomSocket = currentRoom; // NEED FOR DISCONNECT
-		let onlineUsers = io.sockets.adapter.rooms.get(currentRoom) || 1;
-		onlineUsers = onlineUsers.size;
+		let onlineUsers = io.sockets.adapter.rooms.get(currentRoom);
+		onlineUsers = onlineUsers?.size || 1;
 		io.to(currentRoom).emit("onlineUsersAnswer", { onlineUsers });
 	});
 
 	client.on("leaveRoom", ({ currentRoom }) => {
 		client.leave(currentRoom);
-		let onlineUsers = io.sockets.adapter.rooms.get(currentRoom) || 1;
-		onlineUsers = onlineUsers.size;
+		let onlineUsers = io.sockets.adapter.rooms.get(currentRoom);
+		onlineUsers = onlineUsers?.size || 1;
 		io.to(currentRoom).emit("onlineUsersAnswer", { onlineUsers });
 	});
 
@@ -128,11 +128,9 @@ io.on("connection", (client) => {
 	});
 
 	client.on("videoChange", ({ currentVideoLink, currentRoom }) => {
-		const date = Date.now();
-
 		RoomSchema.findOneAndUpdate(
 			{ name: currentRoom },
-			{ currentVideoLink, createdAt: date },
+			{ currentVideoLink },
 			(err, docs) => {
 				if (err) {
 					return console.log(`ADMIN DATA ERROR: ${err}`);
