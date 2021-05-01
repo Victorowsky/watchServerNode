@@ -9,7 +9,7 @@ passport.use(
 		{
 			clientID: process.env.TWITCH_CLIENT_ID,
 			clientSecret: process.env.TWITCH_CLIENT_SECRET,
-			callbackURL: `https://legga.pl/auth/twitch/callback`,
+			callbackURL: `https://video.legga.pl/auth/twitch/callback`,
 			scope: "user_read",
 		},
 		function (accessToken, refreshToken, profile, done) {
