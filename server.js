@@ -69,6 +69,7 @@ app.get(
 	"/auth/twitch/callback",
 	passport.authenticate("twitch", { failureRedirect: "/" }),
 	function (req, res) {
+		console.log("Callback in server.js");
 		const username = req.session?.passport?.user?.login;
 		// Successful authentication, redirect home.
 		if (username) {
