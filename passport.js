@@ -3,13 +3,13 @@ require("dotenv").config();
 const twitchStrategy = require("passport-twitch-strategy").Strategy;
 
 const UserSchema = require("./Schemas/UserSchema");
-
+//https://video.legga.pl
 passport.use(
 	new twitchStrategy(
 		{
 			clientID: process.env.TWITCH_CLIENT_ID,
 			clientSecret: process.env.TWITCH_CLIENT_SECRET,
-			callbackURL: `https://video.legga.pl/auth/twitch/callback`,
+			callbackURL: `/auth/twitch/callback`,
 			scope: "user_read",
 		},
 		function (accessToken, refreshToken, profile, done) {
